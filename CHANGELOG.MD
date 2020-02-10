@@ -1,4 +1,21 @@
 # 更新日志
+### 3.25.3 | 2019.11.08
+- 升级依赖,去除多余依赖
+
+- 优化 `test.html`
+
+### 3.25.2 | 2019.11.07
+- 修复邮箱登录状态码错误,增加相关提示 [#633](https://github.com/Binaryify/NeteaseCloudMusicApi/issues/633)
+
+### 3.25.0 | 2019.11.06
+- 新增 `云村热评` 接口[#626](https://github.com/Binaryify/NeteaseCloudMusicApi/issues/626)
+
+- 新增 `歌手热门50首歌曲` 接口 
+
+- 新增`电台24小时节目榜`,`电台24小时主播榜`, `电台最热主播榜`,`电台主播新人榜`,`电台付费精品榜` 接口 [#606](https://github.com/Binaryify/NeteaseCloudMusicApi/issues/606)
+
+- 调整 `歌手分类列表 ` 接口参数 [#624](https://github.com/Binaryify/NeteaseCloudMusicApi/issues/624)
+
 ### 3.24.2 | 2019.10.28
 - 修改默认绑定 HOST [#620](https://github.com/Binaryify/NeteaseCloudMusicApi/issues/620)
 
