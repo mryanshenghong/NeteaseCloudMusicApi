@@ -1,4 +1,13 @@
 # 更新日志
+### 3.31.1 | 2020.05.19
+- 修复`cookie`没返回的问题 [#778](https://github.com/Binaryify/NeteaseCloudMusicApi/issues/778)
+
+### 3.31.0 | 2020.05.18
+- 支持 `Node.js` 调用,参考`module_example` 文件夹下的 `test.js`
+
+### 3.30.0 | 2020.05.17
+- 登录接口返回内容增加`cookie`字段,支持手动传入cookie
+
 ### 3.29.1 | 2020.05.13
 - 调整通知接口分页参数 [#761](https://github.com/Binaryify/NeteaseCloudMusicApi/issues/761)
 
