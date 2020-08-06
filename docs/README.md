@@ -110,7 +110,7 @@
 92. 收藏的 MV 列表
 93. 获取最新专辑
 94. 听歌打卡
-95. 获取视频标签下的视频
+95. 获取视频标签/分类下的视频
 96. 已收藏专辑列表
 97. 获取动态评论
 98. 歌单收藏者列表
@@ -163,6 +163,24 @@
 145. 购买数字专辑
 146. 获取 mv 点赞转发评论数数据
 147. 获取视频点赞转发评论数数据
+148. 调整歌单顺序
+149. 调整歌曲顺序
+150. 独家放送列表
+151. 获取推荐视频
+152. 获取视频分类列表 
+153. 获取全部视频列表接口
+154. 获取历史日推可用日期列表
+155. 获取历史日推详细数据
+156. 国家编码列表
+157. 首页-发现
+158. 首页-发现-圆形图标入口列表
+159. 全部新碟
+160. 数字专辑-新碟上架
+161. 数字专辑&数字单曲-榜单
+162. 数字专辑-语种风格馆
+163. 数字专辑详情
+164. 更新头像
+165. 歌单封面上传
 
 ## 安装
 
@@ -287,7 +305,7 @@ $ sudo docker run -d -p 3000:3000 netease-music-api
 ### 调用前须知
 !> 本项目不提供线上 demo，请不要轻易信任使用他人提供的公开服务，以免发生安全问题,泄露自己的账号和密码
 
-!> 为使用方便,降低门槛, 文档示例接口直接使用了 GET 请求,本项目同时支持 GET/POST 请按实际需求使用
+!> 为使用方便,降低门槛, 文档示例接口直接使用了 GET 请求,本项目同时支持 GET/POST 请按实际需求使用 (POST请求url必须添加时间戳,使每次请求url不一样,不然请求会被缓存)
 
 !> 由于接口做了缓存处理 ( 缓存 2 分钟,不缓存数据极容易引起网易服务器高频ip错误 , 可在 app.js 设置 , 可能会导致登陆后获取不到 cookie), **相同的 url** 会在两分钟内只向网易服务器发一次请求 , 如果遇到不需要缓
 存结果的接口 , 可在请求 url 后面加一个时间戳参数使 url 不同 , 例子 :
@@ -312,7 +330,7 @@ $ sudo docker run -d -p 3000:3000 netease-music-api
 
 ### 登录
 
-说明 : 登录有两个接口
+说明 : 登录有两个接口,建议使用`encodeURIComponent`对密码编码或者使用`POST`请求,避免某些特殊字符无法解析,如`#`(`#`在url中会被识别为hash,而不是query)
 
 #### 1. 手机登录
 
@@ -321,11 +339,16 @@ $ sudo docker run -d -p 3000:3000 netease-music-api
 
 `password`: 密码
 
+
+
+**可选参数 :**   
+`countrycode`: 国家码，用于国外手机号登陆，例如美国传入：`1`
+
+`md5_password`: md5加密后的密码,传入后 `password` 将失效  
+
 **接口地址 :** `/login/cellphone`
 
-**可选参数 :** `countrycode`: 国家码，用于国外手机号登陆，例如美国传入：`1`
-
-**调用例子 :** `/login/cellphone?phone=xxx&password=yyy`
+**调用例子 :** `/login/cellphone?phone=xxx&password=yyy` `/login/cellphone?phone=xxx&md5_password=yyy`
 
 #### 2. 邮箱登录
 
@@ -334,6 +357,10 @@ $ sudo docker run -d -p 3000:3000 netease-music-api
 `email`: 163 网易邮箱   
 
 `password`: 密码
+
+**可选参数 :**  
+
+`md5_password`: md5加密后的密码,传入后 `password` 将失效
 
 **接口地址 :** `/login`
 
@@ -500,6 +527,25 @@ signature：用户签名
 
 **调用例子 :** `/user/update?gender=0&signature=测试签名&city=440300&nickname=binary&birthday=1525918298004&province=440000`
 
+### 更新头像
+说明 : 登陆后调用此接口,使用`'Content-Type': 'multipart/form-data'`上传图片formData(name为'imgFile'),可更新头像(参考:https://github.com/Binaryify/NeteaseCloudMusicApi/blob/master/public/avatar_update.html)
+
+**可选参数 :**
+
+`imgSize` : 图片尺寸,默认为300
+
+`imgX` : 水平裁剪偏移,方形图片可不传,默认为0
+`imgY` : 垂直裁剪偏移,方形图片可不传,默认为0
+
+**接口地址 :** `/avatar/upload`
+
+**调用例子 :** `/avatar/upload?imgSize=200`
+
+### 国家编码列表
+说明 : 调用此接口,可获取国家编码列表
+
+**接口地址 :** `/countries/code/list`
+
 ### 获取用户歌单
 
 说明 : 登陆后调用此接口 , 传入用户 id, 可以获取用户歌单
@@ -516,7 +562,8 @@ signature：用户签名
 ### 更新歌单
 
 说明 : 登陆后调用此接口,可以更新用户歌单
-参数:
+
+**必选参数 :**  
 
 ```
 id:歌单id
@@ -534,8 +581,8 @@ tags:歌单tag ,多个用 `;` 隔开,只能用官方规定标签
 
 ### 更新歌单描述
 说明 : 登陆后调用此接口,可以单独更新用户歌单描述
-参数:
 
+**必选参数 :**  
 ```
 id:歌单id
 
@@ -548,7 +595,8 @@ desc:歌单描述
 
 ### 更新歌单名
 说明 : 登陆后调用此接口,可以单独更新用户歌单名
-参数:
+
+**必选参数 :**  
 
 ```
 id: 歌单id
@@ -562,7 +610,8 @@ name: 歌单名
 
 ### 更新歌单标签
 说明 : 登陆后调用此接口,可以单独更新用户歌单标签
-参数:
+
+**必选参数 :**  
 
 ```
 id: 歌单id
@@ -573,6 +622,50 @@ tags: 歌单标签
 **接口地址 :** `/playlist/tags/update`  
 
 **调用例子 :** `/playlist/tags/update?id=24381616&tags=学习` 
+
+
+### 歌单封面上传
+说明 : 登陆后调用此接口,使用`'Content-Type': 'multipart/form-data'`上传图片formData(name为'imgFile'),可更新歌单封面(参考:https://github.com/Binaryify/NeteaseCloudMusicApi/blob/master/public/playlist_cover_update.html)
+
+**必选参数 :**  
+`id`: 歌单id 3143833470
+
+**可选参数 :**
+
+`imgSize` : 图片尺寸,默认为300
+
+`imgX` : 水平裁剪偏移,方形图片可不传,默认为0
+`imgY` : 垂直裁剪偏移,方形图片可不传,默认为0
+
+**接口地址 :** `/playlist/cover/update`
+
+**调用例子 :** `/playlist/cover/update?id=3143833470&imgSize=200`
+
+
+### 调整歌单顺序
+说明 : 登陆后调用此接口,可以根据歌单id顺序调整歌单顺序
+
+
+**必选参数 :**   
+
+`ids`: 歌单id列表
+
+**接口地址 :** `/playlist/order/update`  
+
+**调用例子 :** `/playlist/order/update?ids=[111,222]` 
+
+### 调整歌曲顺序
+说明 : 登陆后调用此接口,可以根据歌曲id顺序调整歌曲顺序  
+
+
+**必选参数 :**   
+`pid`: 歌单id  
+
+`ids`: 歌曲id列表
+
+**接口地址 :** `/song/order/update`  
+
+**调用例子 :** `/song/order/update?pid=2039116066&ids=[5268328,1219871]` 
 
 ### 获取用户电台
 
@@ -765,8 +858,6 @@ tags: 歌单标签
 
 说明 : 调用此接口,可获取歌手分类列表  
 
-**必选参数 :** `cat` : 即 category Code,歌手类型,默认 1001,返回华语男歌手数据  
-
 **可选参数 :**
 
 `limit` : 返回数量 , 默认为 30
@@ -897,7 +988,7 @@ tags: 歌单标签
 `cat`:`cat`: tag, 比如 " 华语 "、" 古风 " 、" 欧美 "、" 流行 ", 默认为
 "全部",可从歌单分类接口获取(/playlist/catlist)  
 
-`limit`: 取出评论数量 , 默认为 50
+`limit`: 取出歌单数量 , 默认为 50
 
 `offset`: 偏移数量 , 用于分页 , 如 :( 评论页数 -1)\*50, 其中 50 为 limit 的值
 
@@ -932,12 +1023,12 @@ tags: 歌单标签
 
 ### 获取歌单详情
 
-说明 : 歌单能看到歌单名字 , 但看不到具体歌单内容 , 调用此接口 , 传入歌单 id, 可
-以获取对应歌单内的所有的音乐，但是返回的trackIds是完整的，tracks 则是不完整的，可拿全部 trackIds 请求一次 `song/detail` 接口获取所有歌曲的详情 ([https://github.com/Binaryify/NeteaseCloudMusicApi/issues/452](https://github.com/Binaryify/NeteaseCloudMusicApi/issues/452))
+说明 : 歌单能看到歌单名字, 但看不到具体歌单内容 , 调用此接口 , 传入歌单 id, 可
+以获取对应歌单内的所有的音乐(未登录状态只能获取不完整的歌单,登录后是完整的)，但是返回的trackIds是完整的，tracks 则是不完整的，可拿全部 trackIds 请求一次 `song/detail` 接口获取所有歌曲的详情 ([https://github.com/Binaryify/NeteaseCloudMusicApi/issues/452](https://github.com/Binaryify/NeteaseCloudMusicApi/issues/452))
 
 **必选参数 :** `id` : 歌单 id
 
-**可选参数 :** `s` : 歌单最近的 s 个收藏者
+**可选参数 :** `s` : 歌单最近的 s 个收藏者,默认为8
 
 **接口地址 :** `/playlist/detail`
 
@@ -1149,6 +1240,20 @@ mp3url 不能直接用 , 可通过 `/song/url` 接口传入歌曲 id 获取具�
 **接口地址 :** `/top/song`
 
 **调用例子 :** `/top/song?type=96`
+
+### 首页-发现
+说明 : 调用此接口 , 可获取APP首页信息
+
+**接口地址 :** `/homepage/block/page` 
+
+**可选参数 :** `refresh`: 是否刷新数据,默认为true
+
+
+### 首页-发现-圆形图标入口列表
+说明 : 调用此接口 , 可获取APP首页圆形图标入口列表
+
+**接口地址 :** `/homepage/dragon/ball`
+
 
 ### 歌曲评论
 
@@ -1640,6 +1745,24 @@ mp3url 不能直接用 , 可通过 `/song/url` 接口传入歌曲 id 获取具�
 返回数据如下图 :
 ![每日推荐歌曲](https://raw.githubusercontent.com/Binaryify/NeteaseCloudMusicApi/master/static/%E6%8E%A8%E8%8D%90%E6%AD%8C%E6%9B%B2.png)
 
+### 获取历史日推可用日期列表
+
+说明 : 调用此接口 , 可获得历史日推可用日期列表  
+
+**接口地址 :** `/history/recommend/songs`
+
+**调用例子 :** `/history/recommend/songs`
+
+### 获取历史日推详情数据
+
+说明 : 调用此接口 ,传入当日日期, 可获得当日历史日推数据  
+
+**必选参数 :** `date`: 日期,通过历史日推可用日期列表接口获取,不能任意日期
+
+**接口地址 :** `/history/recommend/songs/detail`
+
+**调用例子 :** `/history/recommend/songs/detail?date=2020-06-21`
+
 ### 私人 FM
 
 说明 : 私人 FM( 需要登录 )
@@ -1718,18 +1841,39 @@ mp3url 不能直接用 , 可通过 `/song/url` 接口传入歌曲 id 获取具�
 说明 : 调用此接口 , 可获取新碟上架列表 , 如需具体音乐信息需要调用获取专辑列表接
 口 `/album` , 然后传入 id, 如 `/album?id=32311&limit=30`
 
-**可选参数 :** `limit`: 取出数量 , 默认为 50
+**可选参数 :**    
+
+ `limit`: 取出数量 , 默认为 50
 
 `offset`: 偏移数量 , 用于分页 , 如 :( 页数 -1)\*50, 其中 50 为 limit 的值 , 默认
 为 0
 
+`area`: ALL:全部,ZH:华语,EA:欧美,KR:韩国,JP:日本
+
+`type` : new:全部 hot:热门,默认为 new
+
+`year` : 年,默认本年
+
+`month` : 月,默认本月
+
 **接口地址 :** `/top/album`
 
-**调用例子 :** `/top/album?offset=0&limit=30`
+**调用例子 :** `/top/album?offset=0&limit=30&year=2019&month=6`
 
-返回数据如下图 :
+### 全部新碟
+说明 : 登陆后调用此接口 ,可获取全部新碟  
 
-![新碟上架](https://raw.githubusercontent.com/Binaryify/NeteaseCloudMusicApi/master/static/new_albums.png)
+**可选参数 :**
+
+`limit` : 返回数量 , 默认为 30
+
+`offset` : 偏移数量，用于分页 , 如 :( 页数 -1)\*30, 其中 30 为 limit 的值 , 默认为 0  
+
+`area` : ALL:全部,ZH:华语,EA:欧美,KR:韩国,JP:日本
+
+**接口地址 :** `/album/new`
+
+**调用例子 :** `/album/new?area=KR&limit=10`
 
 ### 最新专辑
 
@@ -1854,13 +1998,27 @@ mp3url 不能直接用 , 可通过 `/song/url` 接口传入歌曲 id 获取具�
 
 **调用例子 :** `/program/recommend`
 
-### 独家放送
+### 独家放送(入口列表)
 
 说明 : 调用此接口 , 可获取独家放送
 
 **接口地址 :** `/personalized/privatecontent`
 
 **调用例子 :** `/personalized/privatecontent`
+
+### 独家放送列表
+
+说明 : 调用此接口 , 可获取独家放送列表  
+
+**可选参数 :**
+
+`limit` : 返回数量 , 默认为 60
+
+`offset` : 偏移数量，用于分页 , 如 :( 页数 -1)\*60, 其中 60 为 limit 的值 , 默认为 0
+
+**接口地址 :** `/personalized/privatecontent/list`
+
+**调用例子 :** `/personalized/privatecontent/list?limit=1&offset=2`
 
 ### mv 排行
 
@@ -1922,14 +2080,43 @@ MV 点赞转发评论数数据
 
 **调用例子 :** `/video/group/list`
 
-### 获取视频标签下的视频
-说明 : 调用此接口 , 传入`id`,可获取到相关的视频。  (ps：无法分页，每次请求返回内容都不一样，官方桌面软件是打开先请求两次，然后每次滚动到底部的时候再请求一次)  
+### 获取视频分类列表 
+说明 : 调用此接口 , 可获取视频分类列表  
 
-**必选参数 :** `id`: videoGroup 的 id
+**接口地址 :** `/video/category/list`
+
+**调用例子 :** `/video/category/list`
+
+### 获取视频标签/分类下的视频
+说明 : 调用此接口 , 传入标签/分类`id`,可获取到相关的视频,分页参数只能传入offset 
+
+**必选参数 :** `id`: videoGroup 的 id  
+
+**可选参数 :** `offset`: 默认0
 
 **接口地址 :** `/video/group`
 
 **调用例子 :** `/video/group?id=9104`
+
+### 获取全部视频列表 
+说明 : 调用此接口,可获取视频分类列表,分页参数只能传入offset 
+
+**可选参数 :** `offset`: 默认0
+
+**接口地址 :** `/video/timeline/all`
+
+**调用例子 :** `/video/timeline/all`
+
+### 获取推荐视频
+说明 : 调用此接口, 可获取推荐视频,分页参数只能传入offset 
+
+**必选参数 :** `id`: videoGroup 的 id  
+
+**可选参数 :** `offset`: 默认0
+
+**接口地址 :** `/video/group`
+
+**调用例子 :** `/video/timeline/recommend`
 
 ### 相关视频
 
@@ -1971,91 +2158,6 @@ MV 点赞转发评论数数据
 **调用例子 :** `/video/url?id=89ADDE33C0AAE8EC14B99F6750DB954D`
 
 
-### 排行榜
-
-说明 : 调用此接口 , 传入数字 idx, 可获取不同排行榜
-
-**必选参数 :** `idx`: 对象 key, 对应以下排行榜
-
-```
-"0": 云音乐新歌榜,
-
-"1": 云音乐热歌榜,
-
-"2": 网易原创歌曲榜,
-
-"3": 云音乐飙升榜,
-
-"4": 云音乐电音榜,
-
-"5": UK排行榜周榜,
-
-"6": 美国Billboard周榜
-
-"7": KTV嗨榜,
-
-"8": iTunes榜,
-
-"9": Hit FM Top榜,
-
-"10": 日本Oricon周榜
-
-"11": 韩国Melon排行榜周榜,
-
-"12": 韩国Mnet排行榜周榜,
-
-"13": 韩国Melon原声周榜,
-
-"14": 中国TOP排行榜(港台榜),
-
-"15": 中国TOP排行榜(内地榜)
-
-"16": 香港电台中文歌曲龙虎榜,
-
-"17": 华语金曲榜,
-
-"18": 中国嘻哈榜,
-
-"19": 法国 NRJ EuroHot 30周榜,
-
-"20": 台湾Hito排行榜,
-
-"21": Beatport全球电子舞曲榜,
-
-"22": 云音乐ACG音乐榜,
-
-"23": 云音乐说唱榜
-
-"24": 云音乐古典音乐榜
-
-"25": 云音乐电音榜
-
-"26": 抖音排行榜
-
-"27": 新声榜
-
-"28": 云音乐韩语榜
-
-"29": 英国Q杂志中文版周榜
-
-"30": 电竞音乐榜
-
-"31": 云音乐欧美热歌榜
-
-"32": 云音乐欧美新歌榜
-
-"33": 说唱TOP榜
-
-```
-
-**接口地址 :** `/top/list`
-
-**调用例子 :** `/top/list?idx=6`
-
-返回数据如下图 :
-
-![排行榜](https://raw.githubusercontent.com/Binaryify/NeteaseCloudMusicApi/master/static/top_list.png)
-
 ### 所有榜单
 
 说明 : 调用此接口,可获取所有榜单
@@ -2063,9 +2165,22 @@ MV 点赞转发评论数数据
 
 **调用例子 :** `/toplist`
 
+### 排行榜详情
+说明: 请使用[歌单详情](#获取歌单详情)接口,传入排行榜id获取排行榜详情数据(排行榜也是歌单的一种)
+
+~~说明 : 调用此接口 , 传入榜单 id, 可获取不同排行榜数据(v3.34.0之后不再支持idx参数)~~
+
+~~**必选参数 :** `id`: 榜单id,通过所有榜单接口获取~~
+
+~~**接口地址 :** `/top/list`~~
+
+~~**调用例子 :** `/top/list?id=2809577409`~~
+
+
 ### 所有榜单内容摘要
 
-说明 : 调用此接口,可获取所有榜单内容摘要
+说明 : 调用此接口,可获取所有榜单内容摘要  
+
 **接口地址 :** `/toplist/detail`
 
 **调用例子 :** `/toplist/detail`
@@ -2074,6 +2189,14 @@ MV 点赞转发评论数数据
 
 说明 : 调用此接口 , 可获取排行榜中的歌手榜
 
+**可选参数 :**
+```
+type : 地区
+1: 华语
+2: 欧美
+3: 韩国
+4: 日本
+```
 **接口地址 :** `/toplist/artist`
 
 **调用例子 :** `/toplist/artist`
@@ -2485,6 +2608,59 @@ type='1009' 获取其 id, 如`/search?keywords= 代码时间 &type=1009`
 **接口地址 :** `/setting`
 
 **调用例子 :** `/setting`
+
+### 数字专辑-新碟上架
+说明 : 调用此接口 ,可获取数字专辑-新碟上架  
+
+**可选参数 :**
+
+`limit` : 返回数量 , 默认为 30
+
+`offset` : 偏移数量，用于分页 , 如 :( 页数 -1)\*30, 其中 30 为 limit 的值 , 默认为 0  
+**接口地址 :** `/album/list`
+
+**调用例子 :** `/album/list?limit=10`
+
+### 数字专辑&数字单曲-榜单
+说明 : 调用此接口 ,可获取数字专辑&数字单曲-榜单  
+
+**可选参数 :**
+
+`limit` : 返回数量 , 默认为 30
+
+`offset` : 偏移数量，用于分页 , 如 :( 页数 -1)\*30, 其中 30 为 limit 的值 , 默认为 0  
+
+`albumType` : 为数字专辑,1为数字单曲
+
+`type` : daily:日榜,week:周榜,year:年榜,total:总榜  
+
+**接口地址 :** `/album_songsaleboard`
+
+**调用例子 :** `/album/songsaleboard?type=year&year=2020&albumType=0`
+
+### 数字专辑-语种风格馆
+
+说明 : 调用此接口 ,可获取语种风格馆数字专辑列表  
+
+**可选参数 :**
+
+`limit` : 返回数量 , 默认为 30
+
+`offset` : 偏移数量，用于分页 , 如 :( 页数 -1)\*30, 其中 30 为 limit 的值 , 默认为 0  
+
+`area` 地区 Z_H:华语,E_A:欧美,KR:韩国,JP:日本  
+
+**接口地址 :** `/album/list/style`
+
+**调用例子 :** `/album/list/style?area=Z_H&offset=2`
+
+### 数字专辑详情
+说明 : 调用此接口 ,传入数字专辑id可获取数字专辑详情(和歌单详情有差异)
+
+**接口地址 :** `/album/detail`
+
+**调用例子 :** `/album/detail?id=84547195`
+
 
 ### 我的数字专辑
 说明 : 登陆后调用此接口 ,可获取我的数字专辑
